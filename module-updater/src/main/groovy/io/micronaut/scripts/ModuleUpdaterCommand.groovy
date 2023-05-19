@@ -25,7 +25,10 @@ class ModuleUpdaterCommand implements Runnable {
     String platform
 
     @Option(names = ['-g', '--gradle'], description = 'Micronaut Gradle Plugin Version', defaultValue = "4.0.0-M3", showDefaultValue = CommandLine.Help.Visibility.ALWAYS)
-    String gradlePluginVersion = '4.0.0-M3'
+    String gradlePluginVersion
+
+    @Option(names = ['--micronaut-build-plugin'], description = 'Micronaut Build Plugin Version', defaultValue = "6.4.4", showDefaultValue = CommandLine.Help.Visibility.ALWAYS)
+    String micronautBuildPlugin
 
     @Option(names = ['--remove-snapshot'], defaultValue = StringUtils.TRUE, description = 'remove snapshots repositories from module')
     boolean removeSnapshot = true
@@ -49,6 +52,10 @@ class ModuleUpdaterCommand implements Runnable {
         processGradleFiles(module, gradleFile -> removeMicronautRuntime(gradleFile))
 
         addMicronautLogging(module, moduleVersion, versions)
+
+        processGradleSettingsFiles(module, settingsFile -> {
+            replaceInLines(settingsFile, "    io.micronaut.build.shared.settings", "    id(\"io.micronaut.build.shared.settings\") version \"${micronautBuildPlugin}\"", true)}
+        )
     }
 
     private static void addMicronautLogging(File module, File moduleVersion, Map<String, String> versions) {
@@ -96,7 +103,7 @@ class ModuleUpdaterCommand implements Runnable {
 
     private static void processGradleSettingsFiles(File module, Consumer<File> settingsFileProcessor) {
         module.eachFileRecurse(FILES) { File gradleFile ->
-            if(gradleFile.name.endsWith('settings.gradle') || gradleFile.name.endsWith('settings.gradle.kts')) {
+            if(gradleFile.name == 'settings.gradle' || gradleFile.name == 'settings.gradle.kts') {
                 settingsFileProcessor.accept(gradleFile)
             }
         }
@@ -121,20 +128,24 @@ class ModuleUpdaterCommand implements Runnable {
         }
     }
 
-    private static boolean replaceInLines(File f, String lookingFor, String replacement) {
+    private static boolean replaceInLines(File f, String lookingFor, String replacement, boolean replaceWholeLine = false) {
         boolean modified = false
         List<String> modifiedLines = new ArrayList<>()
         f.eachLine {line ->
             if (line.contains(lookingFor)) {
                 String[] arr = replacement.split("\n")
                 if (arr.length == 1) {
-                    modifiedLines << line.replace(lookingFor, replacement)
+                    if (replaceWholeLine) {
+                        modifiedLines << replacement
+                    } else {
+                        modifiedLines << line.replace(lookingFor, replacement)
+                    }
+
                 } else {
                     for (String newLine : arr) {
                         modifiedLines << newLine
                     }
                 }
-
                 modified = true
             } else {
                 modifiedLines << line
