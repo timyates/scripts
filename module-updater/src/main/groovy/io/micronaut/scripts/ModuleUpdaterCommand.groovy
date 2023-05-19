@@ -38,7 +38,8 @@ class ModuleUpdaterCommand implements Runnable {
         File platformVersion = new File("$platform/gradle/libs.versions.toml")
         File moduleVersion = new File("$module/gradle/libs.versions.toml")
         File module = new File(module)
-        updateModuleVersions(platformVersion, moduleVersion)
+        Map<String, String> versions = micronautVersions(platformVersion)
+        updateModuleVersions(versions, moduleVersion)
         updateModuleVersions(['micronaut-gradle-plugin': gradlePluginVersion], moduleVersion)
         if (removeSnapshot) {
             processGradleFiles(module, gradleFile -> removeSnapshotRepository(gradleFile))
@@ -46,6 +47,24 @@ class ModuleUpdaterCommand implements Runnable {
         removeCoreBranch(module)
 
         processGradleFiles(module, gradleFile -> removeMicronautRuntime(gradleFile))
+
+        addMicronautLogging(module, moduleVersion, versions)
+    }
+
+    private static void addMicronautLogging(File module, File moduleVersion, Map<String, String> versions) {
+        processGradleFiles(module, gradleFile -> {
+            boolean logging = replaceInLines(gradleFile, "mn.logback.classic", "mnLogging.logback.classic")
+            if (logging) {
+                if (!moduleVersion.text.contains('micronaut-logging')) {
+                    replaceInLines(moduleVersion, "[libraries]", "micronaut-logging = \"${versions['micronaut-logging']}\"\n[libraries]\nmicronaut-logging = { module = \"io.micronaut.logging:micronaut-logging-bom\", version.ref = \"micronaut-logging\" }")
+                }
+                processGradleSettingsFiles(module, settingsFile -> {
+                    if (!settingsFile.text.contains('micronaut-logging')) {
+                        replaceInLines(settingsFile, "micronautBuild {", "micronautBuild {\n    importMicronautCatalog(\"micronaut-logging\")\n")
+                    }
+                })
+            }
+        })
     }
 
     private static void removeCoreBranch(File module) {
@@ -75,6 +94,14 @@ class ModuleUpdaterCommand implements Runnable {
         }
     }
 
+    private static void processGradleSettingsFiles(File module, Consumer<File> settingsFileProcessor) {
+        module.eachFileRecurse(FILES) { File gradleFile ->
+            if(gradleFile.name.endsWith('settings.gradle') || gradleFile.name.endsWith('settings.gradle.kts')) {
+                settingsFileProcessor.accept(gradleFile)
+            }
+        }
+    }
+
     private static void removeSnapshotRepository(File gradleFile) {
         removeLines(gradleFile, line -> line.contains('https://s01.oss.sonatype.org/content/repositories/snapshots/') || line.contains('addSnapshotRepository()'))
     }
@@ -94,9 +121,29 @@ class ModuleUpdaterCommand implements Runnable {
         }
     }
 
-    private static void updateModuleVersions(File platformVersionFile, File moduleVersionFile) {
-        Map<String, String> versions = micronautVersions(platformVersionFile)
-        updateModuleVersions(versions, moduleVersionFile)
+    private static boolean replaceInLines(File f, String lookingFor, String replacement) {
+        boolean modified = false
+        List<String> modifiedLines = new ArrayList<>()
+        f.eachLine {line ->
+            if (line.contains(lookingFor)) {
+                String[] arr = replacement.split("\n")
+                if (arr.length == 1) {
+                    modifiedLines << line.replace(lookingFor, replacement)
+                } else {
+                    for (String newLine : arr) {
+                        modifiedLines << newLine
+                    }
+                }
+
+                modified = true
+            } else {
+                modifiedLines << line
+            }
+        }
+        if (modified) {
+            f.text = String.join("\n", modifiedLines) + '\n'
+        }
+        return modified
     }
 
     private static void updateModuleVersions(Map<String, String> versions , File moduleVersionFile) {
