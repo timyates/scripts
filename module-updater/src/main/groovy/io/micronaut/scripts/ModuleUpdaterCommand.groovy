@@ -128,6 +128,9 @@ class ModuleUpdaterCommand implements Runnable {
                         l.substring(l.indexOf(' = ') + ' = '.length()).replaceAll('"', ''))
             }
         }
+        if (micronautVersions.containsKey("micronaut-serialization")) {
+            micronautVersions.put("micronaut-serde", micronautVersions.get("micronaut-serialization"))
+        }
         micronautVersions
     }
 
