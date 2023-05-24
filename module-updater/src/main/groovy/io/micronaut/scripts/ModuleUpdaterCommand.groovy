@@ -49,6 +49,10 @@ class ModuleUpdaterCommand implements Runnable {
         }
         removeCoreBranch(module)
 
+        if (!moduleVersion.text.contains("micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }")) {
+            replaceInLines(moduleVersion, "[libraries]", "micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }\n[libraries]\n")
+        }
+
         processGradleFiles(module, gradleFile -> removeMicronautRuntime(gradleFile))
 
         addMicronautLogging(module, moduleVersion, versions)
