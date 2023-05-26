@@ -24,7 +24,7 @@ class ModuleUpdaterCommand implements Runnable {
     @Option(names = ['-p', '--platform'], description = 'location of the platform being upgraded', required = true)
     String platform
 
-    @Option(names = ['-g', '--gradle'], description = 'Micronaut Gradle Plugin Version', defaultValue = "4.0.0-M3", showDefaultValue = CommandLine.Help.Visibility.ALWAYS)
+    @Option(names = ['-g', '--gradle'], description = 'Micronaut Gradle Plugin Version', defaultValue = "4.0.0-M4", showDefaultValue = CommandLine.Help.Visibility.ALWAYS)
     String gradlePluginVersion
 
     @Option(names = ['--micronaut-build-plugin'], description = 'Micronaut Build Plugin Version', defaultValue = "6.5.0", showDefaultValue = CommandLine.Help.Visibility.ALWAYS)
@@ -53,7 +53,11 @@ class ModuleUpdaterCommand implements Runnable {
             replaceInLines(moduleVersion, "[libraries]", "micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }\n[libraries]\n")
         }
 
-        processGradleFiles(module, gradleFile -> removeMicronautRuntime(gradleFile))
+        processGradleFiles(module, gradleFile -> {
+            removeMicronautRuntime(gradleFile)
+            removeMicronautInjectJavaImplementation(gradleFile)
+            removeMicronautInjectGroovyImplementation(gradleFile)
+        })
 
         addMicronautLogging(module, moduleVersion, versions)
 
@@ -198,5 +202,13 @@ class ModuleUpdaterCommand implements Runnable {
 
     private static void removeMicronautRuntime(File gradleFile) {
         removeLines(gradleFile, line -> line.contains('(mn.micronaut.runtime)'))
+    }
+
+    private static void removeMicronautInjectJavaImplementation(File gradleFile) {
+        removeLines(gradleFile, line -> line.contains('implementation(mn.micronaut.inject.java)'))
+    }
+
+    private static void removeMicronautInjectGroovyImplementation(File gradleFile) {
+        removeLines(gradleFile, line -> line.contains('implementation(mn.micronaut.inject.groovy)'))
     }
 }
