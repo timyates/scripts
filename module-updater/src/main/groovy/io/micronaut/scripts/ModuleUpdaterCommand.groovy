@@ -88,10 +88,10 @@ class ModuleUpdaterCommand implements Runnable {
                 boolean modified = false
                 List<String> modifiedLines = new ArrayList<>()
                 gradleProperties.eachLine {line ->
-                    if (!line.contains('# Micronaut core branch for BOM pull requests') && !line.contains('githubCoreBranch=')  && !line.contains('bomProperty=')) {
-                        modifiedLines << line
-                    } else {
+                    if (line.contains('# Micronaut core branch for BOM pull requests') || line.contains('githubCoreBranch=') || line.contains('bomProperty=') || line.contains("bomProperties=")) {
                         modified = true
+                    } else {
+                        modifiedLines << line
                     }
                 }
                 if (modified) {
