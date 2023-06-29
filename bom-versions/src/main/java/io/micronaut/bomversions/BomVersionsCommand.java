@@ -1,7 +1,6 @@
 package io.micronaut.bomversions;
 
 import io.micronaut.configuration.picocli.PicocliRunner;
-import io.micronaut.core.util.StringUtils;
 import io.micronaut.core.version.SemanticVersion;
 import jakarta.inject.Inject;
 import picocli.CommandLine.Command;
@@ -34,6 +33,9 @@ public class BomVersionsCommand implements Runnable {
     @Option(names = {"-rc", "--release-candidate"})
     boolean releaseCandidate = true;
 
+    @Option(names = {"-f", "--folder"}, defaultValue = "/Users/sdelamo/github/micronaut-projects")
+    String folder;
+
     @Inject
     GithubApiClient githubApiClient;
 
@@ -45,7 +47,7 @@ public class BomVersionsCommand implements Runnable {
     }
 
     public void run() {
-        run(new File("/Users/sdelamo/github/micronaut-projects/" + (platform ? "micronaut-platform" : "micronaut-core")  + "/gradle/libs.versions.toml"));
+        run(new File(String.join("/", folder, (platform ? "micronaut-platform" : "micronaut-core"), "gradle", "libs.versions.toml")));
     }
 
     private String cleanupName(Project project) {
