@@ -1,9 +1,10 @@
-## Micronaut 3.5.4 Documentation
+CLI utility to ensure micronaut-platform contains the latest releases
 
-- [User Guide](https://docs.micronaut.io/3.5.4/guide/index.html)
-- [API Reference](https://docs.micronaut.io/3.5.4/api/index.html)
-- [Configuration Reference](https://docs.micronaut.io/3.5.4/guide/configurationreference.html)
-- [Micronaut Guides](https://guides.micronaut.io/index.html)
----
-
-- [Shadow Gradle Plugin](https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow)
+```
+micronaut-platform$ git pull
+micronaut-platform$ cd ../scripts/bom-versions/
+bom-versions$ export GITHUB_TOKEN=xxx
+bom-versions$ ./gradlew build
+bom-versions$ java -jar build/libs/bom-versions-0.1-all.jar -f /Users/sdelamo/github/micronaut-projects
+micronaut-aot bom version: 2.0.0-M3 github version: 2.0.0-M4
+```
