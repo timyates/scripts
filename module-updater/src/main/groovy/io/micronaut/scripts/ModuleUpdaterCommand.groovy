@@ -24,10 +24,10 @@ class ModuleUpdaterCommand implements Runnable {
     @Option(names = ['-p', '--platform'], description = 'location of the platform being upgraded', required = true)
     String platform
 
-    @Option(names = ['-g', '--gradle'], description = 'Micronaut Gradle Plugin Version', defaultValue = "4.0.0-M4", showDefaultValue = CommandLine.Help.Visibility.ALWAYS)
+    @Option(names = ['-g', '--gradle'], description = 'Micronaut Gradle Plugin Version', defaultValue = "4.0.0-M8", showDefaultValue = CommandLine.Help.Visibility.ALWAYS)
     String gradlePluginVersion
 
-    @Option(names = ['--micronaut-build-plugin'], description = 'Micronaut Build Plugin Version', defaultValue = "6.5.0", showDefaultValue = CommandLine.Help.Visibility.ALWAYS)
+    @Option(names = ['--micronaut-build-plugin'], description = 'Micronaut Build Plugin Version', defaultValue = "6.5.3", showDefaultValue = CommandLine.Help.Visibility.ALWAYS)
     String micronautBuildPlugin
 
     @Option(names = ['--remove-snapshot'], defaultValue = StringUtils.TRUE, description = 'remove snapshots repositories from module')
