@@ -149,6 +149,7 @@ public class WipCommand implements Runnable {
 
             Row excelRow = sheet.createRow(row);
 
+            System.out.println( slug + " " +  count);
             Cell repoCell = excelRow.createCell(0);
             repoCell.setCellValue(slug);
 
