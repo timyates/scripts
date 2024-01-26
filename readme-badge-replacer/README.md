@@ -1,16 +1,14 @@
-## Micronaut 4.1.1 Documentation
+Usage:
 
-- [User Guide](https://docs.micronaut.io/4.1.1/guide/index.html)
-- [API Reference](https://docs.micronaut.io/4.1.1/api/index.html)
-- [Configuration Reference](https://docs.micronaut.io/4.1.1/guide/configurationreference.html)
-- [Micronaut Guides](https://guides.micronaut.io/index.html)
----
+Set up github token:
+```
+export GITHUB_TOKEN=xxx
+```
 
-- [Shadow Gradle Plugin](https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow)
-- [Micronaut Gradle Plugin documentation](https://micronaut-projects.github.io/micronaut-gradle-plugin/latest/)
-- [GraalVM Gradle Plugin documentation](https://graalvm.github.io/native-build-tools/latest/gradle-plugin.html)
-## Feature serialization-jackson documentation
+Then build and run the utility:
+```
+./gradlew build
+java -jar build/libs/readme-badge-replacer-0.1-all.jar
+```
 
-- [Micronaut Serialization Jackson Core documentation](https://micronaut-projects.github.io/micronaut-serialization/latest/guide/)
-
-
+This will clone all repositories in the `micronaut-projects` organisation (to the current directory), and if it has a `README.md` containing the text `Revved up by Gradle Enterprise`, it will be replaced with the new text, committed and a PR will be created. 
